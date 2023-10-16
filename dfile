@@ -1,0 +1,28 @@
+#FROM continuumio/miniconda3:latest
+FROM jupyter/minimal-notebook:latest
+
+EXPOSE 80
+
+WORKDIR /app
+
+COPY . .
+
+
+RUN conda config --set ssl_verify false
+
+# If Apple M1
+RUN conda create --name snowpark-llm-chatbot --override-channels -c https://repo.anaconda.com/pkgs/snowflake python=3.10 numpy pandas
+# Else
+#RUN conda create --name snowpark-llm-chatbot -c https://repo.anaconda.com/pkgs/snowflake python=3.10
+
+RUN echo "conda activate snowpark-llm-chatbot" >> ~/.bashrc
+RUN conda install -c https://repo.anaconda.com/pkgs/snowflake snowflake-snowpark-python openai
+
+RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org streamlit
+
+RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements.txt
+RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade --force-reinstall pandas
+RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade --force-reinstall pyarrow
+RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade --force-reinstall 'snowflake-connector-python[pandas]'
+    
+ENTRYPOINT [ "python3", "-m", "streamlit", "run", "simple_chatbot.py", "--server.port=80", "--server.address=0.0.0.0" ]

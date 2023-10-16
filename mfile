@@ -1,0 +1,7 @@
+DOCKERIMAGENAME=simple-chatbot
+
+run:
+	docker run -p 80:80 $(DOCKERIMAGENAME)
+
+docker:
+	DOCKER_BUILDKIT=1 docker build -f dfile --no-cache --progress=plain  -t $(DOCKERIMAGENAME) .
